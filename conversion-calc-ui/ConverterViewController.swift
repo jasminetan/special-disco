@@ -7,32 +7,66 @@
 //
 
 import UIKit
-struct Converter{
-    let label: String
-    let inputName: String
-    let outputName: String
-}
 
 class ConverterViewController: UIViewController {
+    var check = 0
+    var decimalCheck = 0;
+    var num: String = ""
 
+    @IBAction func clearButton(_ sender: UIButton) {
+        num = ""
+        decimalCheck = 0
+        inputDisplay.text = unit
+        outputDisplay.text = currentConverter.outputUnit(unit: unit)
+    }
+    var currentConverter = Converter()
+    var unit: String = ""
     @IBOutlet weak var outputDisplay: UITextField!
     @IBOutlet weak var inputDisplay: UITextField!
-    let array = [Converter(label: "farenheit to celcius", inputName: "°F", outputName: "°C"),
-                 Converter(label: "celcius to farenheit", inputName: "°C", outputName: "°F"),
-                 Converter(label: "celcius to farenheit", inputName: "°C", outputName: "°F"),
-                 Converter(label: "miles to kilometers", inputName: "mi", outputName: "km"),
-                 Converter(label: "kilometers to miles", inputName: "km", outputName: "mi")]
-   
-    var currentConverter: Converter?
+    @IBAction func numbers(_ sender: UIButton) {
+        if(sender.tag < 11){
+            unit = String(inputDisplay.text!.suffix(2))
+            num += String(sender.tag-1)
+            inputDisplay.text = num + " " + unit
+        }
+        if(sender.tag == 11){
+            if(num == "" || decimalCheck == 1) {
+                return
+            }
+            inputDisplay.text = num + "." + " " + unit
+            num = num + "."
+            decimalCheck = 1
+        }
+        if(sender.tag == 13 && check == 0){
+            if(num.isEmpty){
+                return
+            }
+            inputDisplay.text = "-" + inputDisplay.text!
+            num = "-" + num
+            check = 1
+        }
+        else if (sender.tag == 13 && check == 1){
+            if(num.isEmpty){
+                return
+            }
+            inputDisplay.text = String(inputDisplay.text!.dropFirst())
+            num =  String(num.dropFirst())
+            check = 0
+        }
+        unit = String(inputDisplay.text!.suffix(2))
+        outputDisplay.text = String(format: "%.2f", currentConverter.convert(input: num, conversion: unit)) + " " + currentConverter.outputUnit(unit: unit)
+    }
+ 
     @IBAction func click(_ sender: UIButton) {
         let actionSheet = UIAlertController(title: "Choose converter", message: nil, preferredStyle: .actionSheet)
-        for converter in array {
-            actionSheet.addAction(UIAlertAction(title: converter.label, style: .default) { action in
-                self.outputDisplay.text = converter.outputName
-                self.inputDisplay.text = converter.inputName
+        for currentConverter in currentConverter.array {
+            actionSheet.addAction(UIAlertAction(title: currentConverter.label, style: .default) { action in
+                self.outputDisplay.text = currentConverter.outputName
+                self.inputDisplay.text = currentConverter.inputName
             })
         }
         present(actionSheet, animated: true)
+        num = ""
     }
 
     
@@ -40,8 +74,8 @@ class ConverterViewController: UIViewController {
         super.viewDidLoad()
 
          //Do any additional setup after loading the view.
-        outputDisplay.text = array[0].outputName
-        inputDisplay.text = array[0].inputName
+        outputDisplay.text = currentConverter.array[0].outputName
+        inputDisplay.text = currentConverter.array[0].inputName
     }
 
     override func didReceiveMemoryWarning() {
@@ -49,15 +83,5 @@ class ConverterViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }
